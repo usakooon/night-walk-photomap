@@ -1,0 +1,111 @@
+{
+  "meta": {
+    "title": "Night Walk 休憩所フォトマップ",
+    "description": "青山学院大学 青山キャンパスから相模原キャンパスまでのNight Walk記録",
+    "date": "2026-10-10",
+    "gpx": "data/yamap_2026-10-10_20_26.gpx",
+    "reviewThresholdMeters": 100,
+    "note": "この地図は撮影記録をもとに独自に作成したものです。座標は施設の代表位置であり、実際の撮影位置とは異なる場合があります。"
+  },
+  "spots": [
+    {
+      "id": 1,
+      "name": "馬事公苑",
+      "lat": 35.636700,
+      "lng": 139.633000,
+      "positionType": "representative",
+      "photos": [],
+      "description": "",
+      "time": null,
+      "photoMethod": "unknown"
+    },
+    {
+      "id": 2,
+      "name": "二子玉川公園",
+      "lat": 35.608250,
+      "lng": 139.632278,
+      "positionType": "representative",
+      "photos": [],
+      "description": "",
+      "time": null,
+      "photoMethod": "unknown"
+    },
+    {
+      "id": 3,
+      "name": "梶ケ谷第一公園",
+      "lat": 35.588778,
+      "lng": 139.603087,
+      "positionType": "representative",
+      "photos": [],
+      "description": "",
+      "time": null,
+      "photoMethod": "unknown"
+    },
+    {
+      "id": 4,
+      "name": "マクドナルド246鷺沼店",
+      "lat": 35.577344,
+      "lng": 139.583787,
+      "positionType": "representative",
+      "photos": [],
+      "description": "",
+      "time": null,
+      "photoMethod": "unknown"
+    },
+    {
+      "id": 5,
+      "name": "荏田富士塚公園",
+      "lat": 35.554076,
+      "lng": 139.547151,
+      "positionType": "representative",
+      "photos": [],
+      "description": "",
+      "time": null,
+      "photoMethod": "unknown"
+    },
+    {
+      "id": 6,
+      "name": "藤が丘駅前公園",
+      "lat": 35.544296,
+      "lng": 139.528488,
+      "positionType": "representative",
+      "photos": [],
+      "description": "",
+      "time": null,
+      "photoMethod": "unknown"
+    },
+    {
+      "id": 7,
+      "name": "ローソン横浜恩田町店",
+      "lat": 35.542385,
+      "lng": 139.496891,
+      "positionType": "representative",
+      "photos": [],
+      "description": "",
+      "time": null,
+      "photoMethod": "unknown"
+    },
+    {
+      "id": 8,
+      "name": "芹ヶ谷公園",
+      "lat": 35.546670,
+      "lng": 139.453060,
+      "positionType": "representative",
+      "photos": [],
+      "description": "",
+      "time": null,
+      "photoMethod": "unknown"
+    },
+    {
+      "id": 9,
+      "name": "忠生公園",
+      "lat": 35.572399,
+      "lng": 139.423832,
+      "positionType": "representative",
+      "photos": [],
+      "description": "",
+      "time": null,
+      "photoMethod": "unknown"
+    }
+  ]
+}
