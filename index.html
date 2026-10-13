@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Night Walk 休憩所フォトマップ</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark:    #0D1B2A;
+      --bg-panel:   #152233;
+      --bg-card:    #1C2E42;
+      --accent:     #7EC8C8;
+      --gold:       #F4C842;
+      --track:      #38D6C9;   /* 歩行軌跡の色 */
+      --warn:       #F2A65A;   /* 位置要確認 */
+      --text:       #E8E8E8;
+      --text-muted: #8AA0B4;
+      --border:     #2A3F55;
+      --photo-bg:   #0A1520;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    body {
+      font-family: 'Noto Sans JP', 'Hiragino Sans', 'Yu Gothic', sans-serif;
+      background: var(--bg-dark);
+      color: var(--text);
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── ヘッダー ── */
+    header {
+      background: var(--bg-panel);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 16px;
+      padding-top: max(10px, env(safe-area-inset-top));
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+    header h1 {
+      font-size: clamp(14px, 3vw, 18px);
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: var(--accent);
+      white-space: nowrap;
+    }
+    header .sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* ── レイアウト ── */
+    .layout { display: flex; flex: 1; min-height: 0; overflow: hidden; }
+
+    /* ── サイドバー ── */
+    .sidebar {
+      width: 230px;
+      min-width: 230px;
+      background: var(--bg-panel);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .sidebar-head {
+      padding: 10px 14px 6px;
+      font-size: 11px;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .spot-list { overflow-y: auto; flex: 1; }
+    .spot-item {
+      width: 100%;
+      font: inherit;
+      color: inherit;
+      text-align: left;
+      background: none;
+      border: 0;
+      border-bottom: 1px solid var(--border);
+      border-left: 3px solid transparent;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .spot-item:hover { background: var(--bg-card); }
+    .spot-item.active { background: var(--bg-card); border-left-color: var(--accent); }
+    .spot-num {
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      background: var(--gold);
+      color: #0D1B2A;
+      font-size: 12px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .spot-info { flex: 1; min-width: 0; }
+    .spot-info > span { display: block; }
+    .spot-name {
+      font-size: 13px; font-weight: 500;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .spot-status { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+    .spot-status.has-photo { color: var(--accent); }
+    .spot-flag { font-size: 10px; color: var(--warn); margin-top: 2px; }
+
+    /* ── 地図 ── */
+    .map-wrap { flex: 1; position: relative; overflow: hidden; }
+    #map { width: 100%; height: 100%; }
+
+    .notice {
+      position: absolute;
+      z-index: 1000;
+      left: 50%;
+      bottom: 30px;
+      transform: translateX(-50%);
+      width: max-content;
+      max-width: min(92%, 520px);
+      background: var(--bg-card);
+      border: 1px solid var(--warn);
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    /* ── 表示切り替えパネル ── */
+    .layer-ctl {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 4px;
+      min-width: 132px;
+      font-size: 12px;
+      color: var(--text);
+      box-shadow: 0 2px 12px rgba(0,0,0,0.45);
+    }
+    .layer-ctl label {
+      display: flex; align-items: center; gap: 8px;
+      min-height: 34px; padding: 6px 8px;
+      border-radius: 5px; cursor: pointer;
+    }
+    .layer-ctl label:hover { background: var(--bg-card); }
+    .layer-ctl input { width: 16px; height: 16px; margin: 0; accent-color: var(--accent); }
+    .swatch-line { width: 18px; border-top: 3px solid var(--track); border-radius: 2px; }
+    .swatch-pin {
+      width: 16px; height: 16px; border-radius: 50%;
+      background: var(--gold); color: #0D1B2A;
+      font-size: 10px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .layer-ctl button {
+      display: block; width: 100%; min-height: 34px; margin-top: 2px;
+      font: inherit; color: var(--text);
+      background: transparent;
+      border: 1px solid var(--border); border-radius: 5px;
+      cursor: pointer;
+    }
+    .layer-ctl button:hover { background: var(--bg-card); }
+
+    /* ── 休憩所ピン ── */
+    .pin {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--gold); color: #0D1B2A;
+      font-size: 13px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      border: 2px solid #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.6);
+    }
+    .pin.review { border: 2px dashed var(--warn); background: #FFE9A6; }
+
+    /* ── 記録開始・終了マーカー ── */
+    .flag {
+      position: absolute; left: 0; top: 0;
+      transform: translate(-50%, calc(-100% + 7px));
+      display: flex; flex-direction: column; align-items: center;
+      cursor: pointer;
+    }
+    .flag-label {
+      background: var(--bg-panel);
+      border: 1px solid var(--track);
+      border-radius: 6px;
+      padding: 3px 8px;
+      font-size: 11px; font-weight: 700; line-height: 1.35;
+      text-align: center; white-space: nowrap;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    }
+    .flag-label small { display: block; font-size: 10px; font-weight: 400; color: var(--text-muted); }
+    .flag-dot {
+      width: 14px; height: 14px; margin-top: 3px;
+      border-radius: 50%;
+      border: 3px solid #fff;
+      background: var(--track);
+      box-shadow: 0 1px 6px rgba(0,0,0,0.6);
+    }
+    .flag.end .flag-dot { background: var(--bg-dark); border-color: var(--track); }
+
+    /* ── ポップアップ ── */
+    .leaflet-popup-content-wrapper {
+      background: var(--bg-card);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+    }
+    .leaflet-popup-tip { background: var(--bg-card); }
+    .leaflet-popup-content { margin: 0; }
+    .leaflet-container a.leaflet-popup-close-button { color: var(--text-muted); }
+    .popup-inner { width: min(260px, 72vw); padding: 12px 14px; }
+    .popup-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; padding-right: 14px; }
+    .popup-num {
+      width: 24px; height: 24px; border-radius: 50%;
+      background: var(--gold); color: #0D1B2A;
+      font-size: 11px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .popup-name { font-size: 14px; font-weight: 700; line-height: 1.4; }
+    .popup-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; font-size: 10px; color: var(--text-muted); }
+    .popup-tag {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 1px 6px;
+    }
+    .popup-review {
+      margin-bottom: 8px; padding: 6px 8px;
+      border-left: 3px solid var(--warn);
+      background: var(--bg-panel);
+      border-radius: 0 4px 4px 0;
+      font-size: 11px; line-height: 1.6; color: var(--text);
+    }
+    .popup-desc { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; line-height: 1.6; }
+    .popup-text { font-size: 12px; color: var(--text-muted); line-height: 1.6; }
+
+    .photo-slides {
+      aspect-ratio: 4 / 3;
+      background: var(--photo-bg);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .photo-slide { display: none; height: 100%; flex-direction: column; }
+    .photo-slide.active { display: flex; }
+    .photo-slide img { flex: 1; min-height: 0; width: 100%; object-fit: contain; display: block; }
+    .photo-caption { font-size: 10px; color: var(--text-muted); padding: 4px 6px; text-align: center; }
+    .photo-nav { display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 6px; }
+    .photo-nav button {
+      min-width: 36px; min-height: 30px;
+      font: inherit; font-size: 14px; color: var(--text);
+      background: var(--bg-panel);
+      border: 1px solid var(--border); border-radius: 4px;
+      cursor: pointer;
+    }
+    .photo-nav button:hover { background: var(--accent); color: #0D1B2A; }
+    .photo-counter { font-size: 11px; color: var(--text-muted); }
+    .no-photo {
+      display: flex; align-items: center; justify-content: center;
+      height: 100%; min-height: 80px;
+      border: 1px dashed var(--border); border-radius: 6px;
+      background: var(--photo-bg);
+      font-size: 12px; color: var(--text-muted); text-align: center;
+    }
+    .popup-inner > .no-photo { height: auto; padding: 20px; }
+
+    /* ── フッター ── */
+    footer {
+      background: var(--bg-panel);
+      border-top: 1px solid var(--border);
+      padding: 5px 14px;
+      padding-bottom: max(5px, env(safe-area-inset-bottom));
+      font-size: 10px; line-height: 1.5;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+    footer a { color: var(--accent); }
+
+    /* ── Leaflet 暗色テーマ調整 ── */
+    .leaflet-bar a, .leaflet-control-zoom a {
+      background: var(--bg-card) !important;
+      color: var(--accent) !important;
+      border-color: var(--border) !important;
+    }
+    .leaflet-control-attribution {
+      background: rgba(13,27,42,0.85) !important;
+      color: var(--text-muted) !important;
+      font-size: 10px !important;
+    }
+    .leaflet-control-attribution a { color: var(--accent) !important; }
+
+    /* ── スマートフォン ── */
+    @media (max-width: 600px) {
+      .layout { flex-direction: column; }
+      .sidebar {
+        width: 100%; min-width: 0;
+        height: 124px; min-height: 124px;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+      }
+      .spot-list { display: flex; flex-direction: row; overflow-x: auto; overflow-y: hidden; }
+      .spot-item {
+        flex: 0 0 96px; width: 96px;
+        flex-direction: column; justify-content: center;
+        gap: 4px; padding: 8px 6px;
+        text-align: center;
+        border-bottom: none; border-left: 0;
+        border-right: 1px solid var(--border);
+      }
+      .spot-item.active { box-shadow: inset 0 -3px 0 var(--accent); }
+      .spot-name { font-size: 11px; white-space: normal; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🌙 Night Walk 休憩所フォトマップ</h1>
+  <span class="sub">青山キャンパス → 相模原キャンパス</span>
+</header>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-head">休憩所一覧（番号は訪問順）</div>
+    <div class="spot-list" id="spotList"></div>
+  </aside>
+  <div class="map-wrap">
+    <div id="map"></div>
+    <div class="notice" id="notice" role="status" hidden></div>
+  </div>
+</div>
+
+<footer>
+  撮影記録とYAMAPのGPS記録（GPX）をもとに独自に作成した地図です。休憩所の位置は施設の代表位置で、実際の撮影位置とは異なる場合があります。表示する時刻は日本時間です。<br>
+  地図: &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+'use strict';
+
+/* ═══════════════ 設定 ═══════════════ */
+const TZ = 'Asia/Tokyo';          // 表示する時刻のタイムゾーン（GPXはUTC）
+const GAP_JUMP_M = 150;           // 連続する2点がこれ以上離れていたら「記録の空白」として破線で描く
+const DEFAULT_REVIEW_M = 100;     // spots.json に指定がないときの「位置要確認」の距離
+const TRACK_COLOR = getComputedStyle(document.documentElement).getPropertyValue('--track').trim() || '#38D6C9';
+
+const POSITION_LABEL = {
+  'representative': '施設の代表位置',
+  'manual':         '手動で設定した位置',
+  'photo-gps':      '写真のGPS位置',
+  'actual':         '実測位置'
+};
+const METHOD_LABEL = { fotoshi: 'Fotoshi', camera: '通常のカメラ', unknown: '不明' };
+
+/* ═══════════════ 小さな道具 ═══════════════ */
+const esc = s => String(s ?? '').replace(/[&<>"']/g,
+  c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+// 日本時間に変換して表示（閲覧者の端末のタイムゾーンに依存しない）
+const jstFormat = new Intl.DateTimeFormat('ja-JP', {
+  timeZone: TZ, year: 'numeric', month: 'numeric', day: 'numeric',
+  hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
+});
+function jst(date) {
+  const p = {};
+  for (const part of jstFormat.formatToParts(date)) p[part.type] = part.value;
+  return {
+    full:  `${p.year}年${+p.month}月${+p.day}日 ${p.hour}:${p.minute}`,
+    short: `${+p.month}/${+p.day} ${p.hour}:${p.minute}`,
+    clock: `${p.hour}:${p.minute}`,
+    day:   `${+p.month}月${+p.day}日`
+  };
+}
+
+function haversine(a, b) {   // a, b = {lat, lng} → メートル
+  const R = 6371008.8, rad = Math.PI / 180;
+  const dLat = (b.lat - a.lat) * rad, dLng = (b.lng - a.lng) * rad;
+  const s = Math.sin(dLat / 2) ** 2 +
+            Math.cos(a.lat * rad) * Math.cos(b.lat * rad) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(s));
+}
+
+/* ═══════════════ GPX ═══════════════ */
+function parseGpx(text) {
+  const doc = new DOMParser().parseFromString(text, 'application/xml');
+  if (doc.getElementsByTagName('parsererror').length) throw new Error('GPXの形式が正しくありません');
+
+  const segments = Array.from(doc.getElementsByTagName('trkseg')).map(seg =>
+    Array.from(seg.getElementsByTagName('trkpt')).map(el => {
+      const lat = parseFloat(el.getAttribute('lat'));
+      const lng = parseFloat(el.getAttribute('lon'));
+      if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+      const t = el.getElementsByTagName('time')[0];
+      const time = t ? new Date(t.textContent.trim()) : null;
+      return { lat, lng, time: time && !isNaN(time) ? time : null };
+    }).filter(Boolean)
+  ).filter(seg => seg.length > 0);
+
+  const total = segments.reduce((n, s) => n + s.length, 0);
+  if (total < 2) throw new Error('GPXに軌跡の点が見つかりません');
+
+  // 連続2点が離れすぎている箇所で線を分け、その間は「記録の空白」として別に扱う
+  const runs = [], gaps = [];
+  let meters = 0, prevLast = null;
+  segments.forEach(seg => {
+    let cur = [seg[0]];
+    if (prevLast) gaps.push({ from: prevLast, to: seg[0] });
+    for (let i = 1; i < seg.length; i++) {
+      const d = haversine(seg[i - 1], seg[i]);
+      meters += d;
+      if (d > GAP_JUMP_M) {
+        runs.push(cur);
+        gaps.push({ from: seg[i - 1], to: seg[i] });
+        cur = [seg[i]];
+      } else {
+        cur.push(seg[i]);
+      }
+    }
+    runs.push(cur);
+    prevLast = seg[seg.length - 1];
+  });
+
+  const first = segments[0][0];
+  const lastSeg = segments[segments.length - 1];
+  const last = lastSeg[lastSeg.length - 1];
+  return {
+    runs, gaps, first, last, meters,
+    pointCount: total,
+    latlngs: segments.flat().map(p => [p.lat, p.lng])
+  };
+}
+
+// 休憩所の座標から、歩いた線（記録の空白を除く）までの最短距離[m]
+function distanceToTrack(lat, lng, runs) {
+  const rad = Math.PI / 180;
+  const kx = Math.cos(lat * rad) * 111320, ky = 110540;
+  let best = Infinity;
+  for (const run of runs) {
+    for (let i = 0; i < run.length; i++) {
+      const ax = (run[i].lng - lng) * kx, ay = (run[i].lat - lat) * ky;
+      if (i === run.length - 1) { best = Math.min(best, Math.hypot(ax, ay)); break; }
+      const bx = (run[i + 1].lng - lng) * kx, by = (run[i + 1].lat - lat) * ky;
+      const dx = bx - ax, dy = by - ay, L = dx * dx + dy * dy;
+      const t = L === 0 ? 0 : Math.max(0, Math.min(1, -(ax * dx + ay * dy) / L));
+      best = Math.min(best, Math.hypot(ax + t * dx, ay + t * dy));
+    }
+  }
+  return best;
+}
+
+/* ═══════════════ 表示パーツ ═══════════════ */
+function showNotice(msg) {
+  const el = document.getElementById('notice');
+  el.textContent = msg;
+  el.hidden = false;
+}
+
+function flagMarker(kind, label, point) {
+  const when = point.time ? `<small>${esc(jst(point.time).short)}</small>` : '';
+  const icon = L.divIcon({
+    className: '',
+    html: `<div class="flag ${kind}"><span class="flag-label">${label}${when}</span><span class="flag-dot"></span></div>`,
+    iconSize: [0, 0],
+    iconAnchor: [0, 0],
+    popupAnchor: [0, -58]
+  });
+  return L.marker([point.lat, point.lng], { icon, title: label, zIndexOffset: 500 });
+}
+
+function flagPopup(label, point, extraRows) {
+  const when = point.time ? `<span class="popup-tag">🕐 ${esc(jst(point.time).full)}（日本時間）</span>` : '';
+  return `<div class="popup-inner">
+    <div class="popup-header"><div class="popup-name">${label}</div></div>
+    <div class="popup-meta">${when}</div>
+    ${extraRows || ''}
+  </div>`;
+}
+
+function formatRange(a, b) {
+  if (!a.time || !b.time) return '';
+  const A = jst(a.time), B = jst(b.time);
+  return A.day === B.day ? `${A.day} ${A.clock} 〜 ${B.clock}` : `${A.full} 〜 ${B.full}`;
+}
+
+function buildTrackLayer(track) {
+  const group = L.featureGroup();
+
+  for (const run of track.runs) {
+    const ll = run.map(p => [p.lat, p.lng]);
+    // 暗い縁取りの上に明るい線を重ねて、暗い地図でも見やすくする
+    L.polyline(ll, { color: '#06101B', weight: 8, opacity: 0.8, lineCap: 'round', lineJoin: 'round', interactive: false }).addTo(group);
+    L.polyline(ll, { color: TRACK_COLOR, weight: 4, opacity: 1, lineCap: 'round', lineJoin: 'round', interactive: false }).addTo(group);
+  }
+
+  // 記録が途切れた区間は破線で描き、歩いた線とは区別する
+  for (const gap of track.gaps) {
+    const ll = [[gap.from.lat, gap.from.lng], [gap.to.lat, gap.to.lng]];
+    L.polyline(ll, { color: TRACK_COLOR, weight: 3, opacity: 0.9, dashArray: '3 9', interactive: false }).addTo(group);
+    const range = formatRange(gap.from, gap.to);
+    const hit = L.polyline(ll, { weight: 18, opacity: 0, interactive: true }).addTo(group);
+    hit.bindPopup(`<div class="popup-inner">
+      <div class="popup-header"><div class="popup-name">記録の空白</div></div>
+      <div class="popup-meta">${range ? `<span class="popup-tag">🕐 ${esc(range)}（日本時間）</span>` : ''}<span class="popup-tag">約${Math.round(haversine(gap.from, gap.to))} m</span></div>
+      <p class="popup-text">この間はGPSの点が記録されていません。前後の点を破線でつないでいるだけで、実際に歩いた道筋ではありません。</p>
+    </div>`);
+  }
+
+  const start = flagMarker('start', '記録開始', track.first)
+    .bindPopup(flagPopup('記録開始', track.first, ''));
+
+  let endExtra = `<p class="popup-text">歩行距離 約${(track.meters / 1000).toFixed(1)} km（GPX記録の点間距離の合計）`;
+  if (track.first.time && track.last.time) {
+    const mins = Math.round((track.last.time - track.first.time) / 60000);
+    endExtra += `<br>記録時間 ${Math.floor(mins / 60)}時間${mins % 60}分（休憩中の時間を含む）`;
+  }
+  endExtra += '</p>';
+  const end = flagMarker('end', '記録終了', track.last)
+    .bindPopup(flagPopup('記録終了', track.last, endExtra));
+
+  start.addTo(group);
+  end.addTo(group);
+  return group;
+}
+
+function buildSpotPopup(spot, review) {
+  const hasPhotos = Array.isArray(spot.photos) && spot.photos.length > 0;
+  const tags = [];
+  if (spot.time) tags.push(`<span class="popup-tag">🕐 ${esc(spot.time)}</span>`);
+  if (hasPhotos) tags.push(`<span class="popup-tag">撮影: ${esc(METHOD_LABEL[spot.photoMethod] || '不明')}</span>`);
+  tags.push(`<span class="popup-tag">📍 ${esc(POSITION_LABEL[spot.positionType] || '位置の種別 未設定')}</span>`);
+
+  const reviewHtml = review
+    ? `<div class="popup-review">⚠ この位置は歩行軌跡から約${Math.round(review.meters)} m離れています。位置の確認が必要です。</div>`
+    : '';
+  const descHtml = spot.description ? `<p class="popup-desc">${esc(spot.description)}</p>` : '';
+
+  let photoHtml;
+  if (hasPhotos) {
+    const slides = spot.photos.map((p, i) => `
+      <div class="photo-slide${i === 0 ? ' active' : ''}">
+        <img src="${esc(p.src)}" alt="${esc(p.caption || spot.name)}" loading="lazy">
+        <div class="photo-caption">${esc(p.caption || '')}${p.time ? ' — ' + esc(p.time) : ''}</div>
+      </div>`).join('');
+    const nav = spot.photos.length > 1 ? `
+      <div class="photo-nav">
+        <button type="button" data-dir="-1" aria-label="前の写真">‹</button>
+        <span class="photo-counter">1 / ${spot.photos.length}</span>
+        <button type="button" data-dir="1" aria-label="次の写真">›</button>
+      </div>` : '';
+    photoHtml = `<div class="photo-slider"><div class="photo-slides">${slides}</div>${nav}</div>`;
+  } else {
+    photoHtml = '<div class="no-photo">📷 写真準備中</div>';
+  }
+
+  return `<div class="popup-inner">
+    <div class="popup-header">
+      <div class="popup-num">${esc(spot.id)}</div>
+      <div class="popup-name">${esc(spot.name)}</div>
+    </div>
+    <div class="popup-meta">${tags.join('')}</div>
+    ${reviewHtml}${descHtml}${photoHtml}
+  </div>`;
+}
+
+// ポップアップが開くたびに、写真の切り替えボタンなどを有効にする
+function wirePopup(root) {
+  if (!root) return;
+  root.querySelectorAll('.photo-slide img').forEach(img => {
+    img.addEventListener('error', () => {
+      const msg = document.createElement('div');
+      msg.className = 'no-photo';
+      msg.textContent = '画像を読み込めませんでした';
+      img.replaceWith(msg);
+    }, { once: true });
+  });
+  root.querySelectorAll('.photo-nav button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const slider = btn.closest('.photo-slider');
+      const slides = slider.querySelectorAll('.photo-slide');
+      let cur = Array.from(slides).findIndex(s => s.classList.contains('active'));
+      slides[cur].classList.remove('active');
+      cur = (cur + Number(btn.dataset.dir) + slides.length) % slides.length;
+      slides[cur].classList.add('active');
+      slider.querySelector('.photo-counter').textContent = `${cur + 1} / ${slides.length}`;
+    });
+  });
+}
+
+// 表示切り替えパネル（歩行軌跡 / 休憩所 / 全体表示）
+function addLayerPanel(map, items, onFit) {
+  const Panel = L.Control.extend({
+    options: { position: 'topleft' },
+    onAdd() {
+      const box = L.DomUtil.create('div', 'layer-ctl');
+      box.setAttribute('role', 'group');
+      box.setAttribute('aria-label', '表示の切り替え');
+      items.forEach(it => {
+        const label = L.DomUtil.create('label', '', box);
+        it.input = L.DomUtil.create('input', '', label);
+        it.input.type = 'checkbox';
+        it.input.checked = map.hasLayer(it.layer);
+        it.input.addEventListener('change', () =>
+          it.input.checked ? map.addLayer(it.layer) : map.removeLayer(it.layer));
+        label.insertAdjacentHTML('beforeend', `${it.swatch}<span>${it.label}</span>`);
+      });
+      const fit = L.DomUtil.create('button', '', box);
+      fit.type = 'button';
+      fit.textContent = '全体を表示';
+      fit.addEventListener('click', onFit);
+      L.DomEvent.disableClickPropagation(box);
+      L.DomEvent.disableScrollPropagation(box);
+      return box;
+    }
+  });
+  new Panel().addTo(map);
+  return { sync() { items.forEach(it => { it.input.checked = map.hasLayer(it.layer); }); } };
+}
+
+/* ═══════════════ 地図の用意 ═══════════════ */
+const map = L.map('map').setView([35.60, 139.55], 10);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+  subdomains: 'abcd',
+  maxZoom: 19
+}).addTo(map);
+
+/* ═══════════════ 読み込みと描画 ═══════════════ */
+async function fetchOk(path) {
+  const res = await fetch(path);
+  if (!res.ok) throw new Error(`${path} (HTTP ${res.status})`);
+  return res;
+}
+
+function render(data, track) {
+  const spots = data.spots || [];
+  const meta = data.meta || {};
+  const threshold = meta.reviewThresholdMeters === null ? null
+                  : Number.isFinite(meta.reviewThresholdMeters) ? meta.reviewThresholdMeters
+                  : DEFAULT_REVIEW_M;
+
+  const spotLayer = L.layerGroup();
+  const listEl = document.getElementById('spotList');
+  const items = [];
+
+  spots.forEach((spot, i) => {
+    const meters = track ? distanceToTrack(spot.lat, spot.lng, track.runs) : null;
+    const review = (meters !== null && threshold !== null && meters > threshold) ? { meters } : null;
+
+    const icon = L.divIcon({
+      className: '',
+      html: `<div class="pin${review ? ' review' : ''}">${esc(spot.id)}</div>`,
+      iconSize: [32, 32],
+      iconAnchor: [16, 16],
+      popupAnchor: [0, -18]
+    });
+    const marker = L.marker([spot.lat, spot.lng], { icon, title: `${spot.id}. ${spot.name}`, riseOnHover: true, zIndexOffset: 1000 })
+      .bindPopup(buildSpotPopup(spot, review), { maxWidth: 300 })
+      .addTo(spotLayer);
+
+    const hasPhoto = Array.isArray(spot.photos) && spot.photos.length > 0;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'spot-item';
+    btn.innerHTML = `
+      <span class="spot-num">${esc(spot.id)}</span>
+      <span class="spot-info">
+        <span class="spot-name">${esc(spot.name)}</span>
+        <span class="spot-status ${hasPhoto ? 'has-photo' : ''}">${hasPhoto ? `📷 ${spot.photos.length}枚` : '写真準備中'}</span>
+        ${review ? '<span class="spot-flag">位置要確認</span>' : ''}
+      </span>`;
+    listEl.appendChild(btn);
+    items.push({ btn, marker, spot });
+
+    btn.addEventListener('click', () => {
+      if (!map.hasLayer(spotLayer)) { map.addLayer(spotLayer); panel.sync(); }
+      map.setView([spot.lat, spot.lng], Math.max(map.getZoom(), 15));
+      marker.openPopup();
+    });
+    marker.on('popupopen', e => {
+      items.forEach(it => it.btn.classList.remove('active'));
+      btn.classList.add('active');
+      btn.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+      wirePopup(e.popup.getElement());
+    });
+  });
+
+  // 歩行軌跡
+  let trackLayer = null;
+  if (track) {
+    trackLayer = buildTrackLayer(track);
+    trackLayer.addTo(map);
+  }
+  spotLayer.addTo(map);
+
+  // 初期表示: 軌跡全体と全休憩所が収まる範囲
+  const all = [...(track ? track.latlngs : []), ...spots.map(s => [s.lat, s.lng])];
+  const fitAll = () => { if (all.length) map.fitBounds(L.latLngBounds(all), { padding: [56, 56] }); };
+
+  const toggles = [];
+  if (trackLayer) toggles.push({ layer: trackLayer, label: '歩行軌跡', swatch: '<span class="swatch-line"></span>' });
+  toggles.push({ layer: spotLayer, label: '休憩所', swatch: '<span class="swatch-pin">1</span>' });
+  const panel = addLayerPanel(map, toggles, fitAll);
+
+  map.invalidateSize();
+  fitAll();
+  requestAnimationFrame(() => { map.invalidateSize(); fitAll(); });
+}
+
+(async function main() {
+  if (location.protocol === 'file:') {
+    showNotice('ファイルを直接開くと動きません。READMEの「ローカルで確認する」の手順で開いてください。');
+    return;
+  }
+
+  let data;
+  try {
+    data = await (await fetchOk('data/spots.json')).json();
+  } catch (e) {
+    console.error(e);
+    showNotice('休憩所のデータ（data/spots.json）を読み込めませんでした。ファイルの場所とJSONの書き方を確認してください。');
+    return;
+  }
+
+  let track = null;
+  const gpxPath = data.meta && data.meta.gpx;
+  if (gpxPath) {
+    try {
+      track = parseGpx(await (await fetchOk(gpxPath)).text());
+    } catch (e) {
+      console.error(e);
+      showNotice('歩行軌跡（GPX）を読み込めませんでした。休憩所だけを表示しています。');
+    }
+  }
+  render(data, track);
+})();
+</script>
+</body>
+</html>
