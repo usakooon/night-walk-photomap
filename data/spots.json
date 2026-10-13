@@ -80,9 +80,11 @@
       "lat": 35.542385,
       "lng": 139.496891,
       "positionType": "representative",
-      "photos": [],
+      "photos": [
+        { "src": "images/7.jpg", "caption": "ローソン横浜恩田町店", "time": "07:15" }
+      ],
       "description": "",
-      "time": null,
+      "time": "07:15",
       "photoMethod": "unknown"
     },
     {
