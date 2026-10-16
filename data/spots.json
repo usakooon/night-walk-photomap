@@ -100,7 +100,9 @@
       "lat": 35.546670,
       "lng": 139.453060,
       "positionType": "representative",
-      "photos": [],
+      "photos": [
+        { "src": "images/8.jpg", "caption": "芹ヶ谷公園" }
+      ],
       "fotoshiPhotos": [],
       "description": "",
       "time": null,
