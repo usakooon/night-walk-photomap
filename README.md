@@ -11,6 +11,7 @@ nightwalk/
 ├── index.html                          # 地図ページ本体
 ├── data/
 │   ├── spots.json                      # 休憩所データ（ここを編集する）
+│   ├── aoyama-sagamihara.geojson       # Fotoshi から書き出した写真（編集しない）
 │   └── yamap_2026-10-10_20_26.gpx      # 歩行軌跡（YAMAPの元ファイル。編集しない）
 ├── images/                             # 写真（表示用に軽量化したもの）を置く
 └── README.md
@@ -99,6 +100,28 @@ images/
 | `time` | 休憩所の時刻（日本時間の文字列。変換はされません） |
 | `photos[].src` | 写真のパス（`images/...`） |
 | `photos[].caption` / `time` | 写真の説明・撮影時刻（任意） |
+| `fotoshiPhotos` | 割り当てる Fotoshi の写真の `id` の配列（下記） |
+
+### Fotoshi の写真を休憩所に割り当てる（`fotoshiPhotos`）
+
+`data/aoyama-sagamihara.geojson`（Fotoshi から書き出した写真）の写真は、休憩所の `fotoshiPhotos` に写真の `id` を書くと、その休憩所の写真として表示されます。
+
+```json
+{
+  "id": 1,
+  "name": "馬事公苑",
+  "photos": [],
+  "fotoshiPhotos": ["RX2glqTtyifKxbgu8HTrqz1r"],
+  ...
+}
+```
+
+- 割り当てた写真は、休憩所のポップアップに画像・撮影日時（日本時間）・撮影者・ライセンスが表示され、地図上のカメラのピンは消えます。
+- どの休憩所の `fotoshiPhotos` にも書かれていない写真は、撮影位置にカメラのピンで表示されます。
+- 割り当ては `fotoshiPhotos` に書かれたとおりに表示され、ページ側で自動では変わりません。別の休憩所に移す・外すときは、`id` を書き換え・削除します。
+- 写真の `id` は GeoJSON の各 `features[].id` です。
+- 現在の割り当ては「撮影位置から一番近い休憩所、ただし 400 m 以内」で決めました（6枚の最寄りの休憩所までの距離は 20〜328 m、2番目に近い休憩所までは 2 km 以上）。
+- `id` が GeoJSON に見つからないときは、画面下に知らせが出ます。
 
 位置が確定できない地点は、推測で座標を決めず、`positionType` を `representative` のまま残して確認します。
 `spots.json` の書式が崩れると何も表示されません。編集後は https://jsonlint.com などで確認してください。
