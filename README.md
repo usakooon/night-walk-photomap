@@ -134,5 +134,5 @@ git push
 ## 地図の出典
 
 - 地図データ: © [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors
-- 背景地図タイル: © [CARTO](https://carto.com/attributions)
+- 背景地図タイル: [OpenStreetMap](https://www.openstreetmap.org/)（標準タイル）
 - 地図ライブラリ: [Leaflet](https://leafletjs.com/)
