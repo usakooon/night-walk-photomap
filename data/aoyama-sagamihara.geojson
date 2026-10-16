@@ -1,0 +1,630 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "stac_version": "1.0.0",
+      "id": "XgHyV7xyJ3DxsETMt3lUdarY",
+      "collection": "fotoshi-photos",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          139.5284275,
+          35.5444659
+        ]
+      },
+      "bbox": [
+        139.5284275,
+        35.5444659,
+        139.5284275,
+        35.5444659
+      ],
+      "properties": {
+        "datetime": "2026-10-10T20:55:00.832Z",
+        "source_capture_precision": null,
+        "username": "usakooon",
+        "creator_name": "usakooon",
+        "source_organization": null,
+        "location_source": "measured",
+        "width": 4128,
+        "height": 3096,
+        "license": "CC-BY-4.0"
+      },
+      "assets": {
+        "thumbnail": {
+          "href": "https://cdn.fotoshi.com/thumbnails/XgHyV7xyJ3DxsETMt3lUdarY.jpeg",
+          "type": "image/jpeg",
+          "roles": [
+            "thumbnail"
+          ],
+          "title": "Thumbnail image",
+          "license": "CC-BY-4.0"
+        },
+        "image-640": {
+          "href": "https://cdn.fotoshi.com/images/XgHyV7xyJ3DxsETMt3lUdarY-640.jpeg",
+          "type": "image/jpeg",
+          "roles": [
+            "overview"
+          ],
+          "title": "Public 640px image",
+          "license": "CC-BY-4.0"
+        },
+        "image-1280": {
+          "href": "https://cdn.fotoshi.com/images/XgHyV7xyJ3DxsETMt3lUdarY-1280.jpeg",
+          "type": "image/jpeg",
+          "roles": [
+            "overview"
+          ],
+          "title": "Public 1280px image",
+          "license": "CC-BY-4.0"
+        },
+        "image-2048": {
+          "href": "https://cdn.fotoshi.com/images/XgHyV7xyJ3DxsETMt3lUdarY-2048.jpeg",
+          "type": "image/jpeg",
+          "roles": [
+            "overview"
+          ],
+          "title": "Public 2048px image",
+          "license": "CC-BY-4.0"
+        },
+        "image-2560": {
+          "href": "https://cdn.fotoshi.com/images/XgHyV7xyJ3DxsETMt3lUdarY-2560.jpeg",
+          "type": "image/jpeg",
+          "roles": [
+            "data"
+          ],
+          "title": "Public 2560px display image",
+          "license": "CC-BY-4.0"
+        }
+      },
+      "links": [
+        {
+          "rel": "self",
+          "type": "application/geo+json",
+          "href": "https://api.fotoshi.com/v1/stac/collections/fotoshi-photos/items/XgHyV7xyJ3DxsETMt3lUdarY"
+        },
+        {
+          "rel": "collection",
+          "type": "application/json",
+          "href": "https://api.fotoshi.com/v1/stac/collections/fotoshi-photos"
+        },
+        {
+          "rel": "root",
+          "type": "application/json",
+          "href": "https://api.fotoshi.com/v1/stac"
+        },
+        {
+          "rel": "license",
+          "type": "text/html",
+          "href": "https://creativecommons.org/licenses/by/4.0/",
+          "title": "CC BY 4.0"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "stac_version": "1.0.0",
+      "id": "RoNJHqvmbSLT7V2IchAg2ybo",
+      "collection": "fotoshi-photos",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          139.5475144,
+          35.5537262
+        ]
+      },
+      "bbox": [
+        139.5475144,
+        35.5537262,
+        139.5475144,
+        35.5537262
+      ],
+      "properties": {
+        "datetime": "2026-10-10T19:51:23.795Z",
+        "source_capture_precision": null,
+        "username": "usakooon",
+        "creator_name": "usakooon",
+        "source_organization": null,
+        "location_source": "measured",
+        "width": 4128,
+        "height": 3096,
+        "license": "CC-BY-4.0"
+      },
+      "assets": {
+        "thumbnail": {
+          "href": "https://cdn.fotoshi.com/thumbnails/RoNJHqvmbSLT7V2IchAg2ybo.jpeg",
+          "type": "image/jpeg",
+          "roles": [
+            "thumbnail"
+          ],
+          "title": "Thumbnail image",
+          "license": "CC-BY-4.0"
+        },
+        "image-640": {
+          "href": "https://cdn.fotoshi.com/images/RoNJHqvmbSLT7V2IchAg2ybo-640.jpeg",
+          "type": "image/jpeg",
+          "roles": [
+            "overview"
+          ],
+          "title": "Public 640px image",
+          "license": "CC-BY-4.0"
+        },
+        "image-1280": {
+          "href": "https://cdn.fotoshi.com/images/RoNJHqvmbSLT7V2IchAg2ybo-1280.jpeg",
+          "type": "image/jpeg",
+          "roles": [
+            "overview"
+          ],
+          "title": "Public 1280px image",
+          "license": "CC-BY-4.0"
+        },
+        "image-2048": {
+          "href": "https://cdn.fotoshi.com/images/RoNJHqvmbSLT7V2IchAg2ybo-2048.jpeg",
+          "type": "image/jpeg",
+          "roles": [
+            "overview"
+          ],
+          "title": "Public 2048px image",
+          "license": "CC-BY-4.0"
+        },
+        "image-2560": {
+          "href": "https://cdn.fotoshi.com/images/RoNJHqvmbSLT7V2IchAg2ybo-2560.jpeg",
+          "type": "image/jpeg",
+          "roles": [
+            "data"
+          ],
+          "title": "Public 2560px display image",
+          "license": "CC-BY-4.0"
+        }
+      },
+      "links": [
+        {
+          "rel": "self",
+          "type": "application/geo+json",
+          "href": "https://api.fotoshi.com/v1/stac/collections/fotoshi-photos/items/RoNJHqvmbSLT7V2IchAg2ybo"
+        },
+        {
+          "rel": "collection",
+          "type": "application/json",
+          "href": "https://api.fotoshi.com/v1/stac/collections/fotoshi-photos"
+        },
+        {
+          "rel": "root",
+          "type": "application/json",
+          "href": "https://api.fotoshi.com/v1/stac"
+        },
+        {
+          "rel": "license",
+          "type": "text/html",
+          "href": "https://creativecommons.org/licenses/by/4.0/",
+          "title": "CC BY 4.0"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "stac_version": "1.0.0",
+      "id": "HCkk0CIRHMybSB8pYGnRT4dZ",
+      "collection": "fotoshi-photos",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          139.5838184,
+          35.5775178
+        ]
+      },
+      "bbox": [
+        139.5838184,
+        35.5775178,
+        139.5838184,
+        35.5775178
+      ],
+      "properties": {
+        "datetime": "2026-10-10T17:55:22.388Z",
+        "source_capture_precision": null,
+        "username": "usakooon",
+        "creator_name": "usakooon",
+        "source_organization": null,
+        "location_source": "measured",
+        "width": 4128,
+        "height": 3096,
+        "license": "CC-BY-4.0"
+      },
+      "assets": {
+        "thumbnail": {
+          "href": "https://cdn.fotoshi.com/thumbnails/HCkk0CIRHMybSB8pYGnRT4dZ.jpeg",
+          "type": "image/jpeg",
+          "roles": [
+            "thumbnail"
+          ],
+          "title": "Thumbnail image",
+          "license": "CC-BY-4.0"
+        },
+        "image-640": {
+          "href": "https://cdn.fotoshi.com/images/HCkk0CIRHMybSB8pYGnRT4dZ-640.jpeg",
+          "type": "image/jpeg",
+          "roles": [
+            "overview"
+          ],
+          "title": "Public 640px image",
+          "license": "CC-BY-4.0"
+        },
+        "image-1280": {
+          "href": "https://cdn.fotoshi.com/images/HCkk0CIRHMybSB8pYGnRT4dZ-1280.jpeg",
+          "type": "image/jpeg",
+          "roles": [
+            "overview"
+          ],
+          "title": "Public 1280px image",
+          "license": "CC-BY-4.0"
+        },
+        "image-2048": {
+          "href": "https://cdn.fotoshi.com/images/HCkk0CIRHMybSB8pYGnRT4dZ-2048.jpeg",
+          "type": "image/jpeg",
+          "roles": [
+            "overview"
+          ],
+          "title": "Public 2048px image",
+          "license": "CC-BY-4.0"
+        },
+        "image-2560": {
+          "href": "https://cdn.fotoshi.com/images/HCkk0CIRHMybSB8pYGnRT4dZ-2560.jpeg",
+          "type": "image/jpeg",
+          "roles": [
+            "data"
+          ],
+          "title": "Public 2560px display image",
+          "license": "CC-BY-4.0"
+        }
+      },
+      "links": [
+        {
+          "rel": "self",
+          "type": "application/geo+json",
+          "href": "https://api.fotoshi.com/v1/stac/collections/fotoshi-photos/items/HCkk0CIRHMybSB8pYGnRT4dZ"
+        },
+        {
+          "rel": "collection",
+          "type": "application/json",
+          "href": "https://api.fotoshi.com/v1/stac/collections/fotoshi-photos"
+        },
+        {
+          "rel": "root",
+          "type": "application/json",
+          "href": "https://api.fotoshi.com/v1/stac"
+        },
+        {
+          "rel": "license",
+          "type": "text/html",
+          "href": "https://creativecommons.org/licenses/by/4.0/",
+          "title": "CC BY 4.0"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "stac_version": "1.0.0",
+      "id": "0CAMa4Uer4ISwifjHZ1Cftmk",
+      "collection": "fotoshi-photos",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          139.6026469,
+          35.5894553
+        ]
+      },
+      "bbox": [
+        139.6026469,
+        35.5894553,
+        139.6026469,
+        35.5894553
+      ],
+      "properties": {
+        "datetime": "2026-10-10T16:55:42.188Z",
+        "source_capture_precision": null,
+        "username": "usakooon",
+        "creator_name": "usakooon",
+        "source_organization": null,
+        "location_source": "measured",
+        "width": 4128,
+        "height": 3096,
+        "license": "CC-BY-4.0"
+      },
+      "assets": {
+        "thumbnail": {
+          "href": "https://cdn.fotoshi.com/thumbnails/0CAMa4Uer4ISwifjHZ1Cftmk.jpeg",
+          "type": "image/jpeg",
+          "roles": [
+            "thumbnail"
+          ],
+          "title": "Thumbnail image",
+          "license": "CC-BY-4.0"
+        },
+        "image-640": {
+          "href": "https://cdn.fotoshi.com/images/0CAMa4Uer4ISwifjHZ1Cftmk-640.jpeg",
+          "type": "image/jpeg",
+          "roles": [
+            "overview"
+          ],
+          "title": "Public 640px image",
+          "license": "CC-BY-4.0"
+        },
+        "image-1280": {
+          "href": "https://cdn.fotoshi.com/images/0CAMa4Uer4ISwifjHZ1Cftmk-1280.jpeg",
+          "type": "image/jpeg",
+          "roles": [
+            "overview"
+          ],
+          "title": "Public 1280px image",
+          "license": "CC-BY-4.0"
+        },
+        "image-2048": {
+          "href": "https://cdn.fotoshi.com/images/0CAMa4Uer4ISwifjHZ1Cftmk-2048.jpeg",
+          "type": "image/jpeg",
+          "roles": [
+            "overview"
+          ],
+          "title": "Public 2048px image",
+          "license": "CC-BY-4.0"
+        },
+        "image-2560": {
+          "href": "https://cdn.fotoshi.com/images/0CAMa4Uer4ISwifjHZ1Cftmk-2560.jpeg",
+          "type": "image/jpeg",
+          "roles": [
+            "data"
+          ],
+          "title": "Public 2560px display image",
+          "license": "CC-BY-4.0"
+        }
+      },
+      "links": [
+        {
+          "rel": "self",
+          "type": "application/geo+json",
+          "href": "https://api.fotoshi.com/v1/stac/collections/fotoshi-photos/items/0CAMa4Uer4ISwifjHZ1Cftmk"
+        },
+        {
+          "rel": "collection",
+          "type": "application/json",
+          "href": "https://api.fotoshi.com/v1/stac/collections/fotoshi-photos"
+        },
+        {
+          "rel": "root",
+          "type": "application/json",
+          "href": "https://api.fotoshi.com/v1/stac"
+        },
+        {
+          "rel": "license",
+          "type": "text/html",
+          "href": "https://creativecommons.org/licenses/by/4.0/",
+          "title": "CC BY 4.0"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "stac_version": "1.0.0",
+      "id": "IwIrjPceseLmxogHEe1Qj5CZ",
+      "collection": "fotoshi-photos",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          139.6329029,
+          35.6069574
+        ]
+      },
+      "bbox": [
+        139.6329029,
+        35.6069574,
+        139.6329029,
+        35.6069574
+      ],
+      "properties": {
+        "datetime": "2026-10-10T15:13:25.012Z",
+        "source_capture_precision": null,
+        "username": "usakooon",
+        "creator_name": "usakooon",
+        "source_organization": null,
+        "location_source": "measured",
+        "width": 4128,
+        "height": 3096,
+        "license": "CC-BY-4.0"
+      },
+      "assets": {
+        "thumbnail": {
+          "href": "https://cdn.fotoshi.com/thumbnails/IwIrjPceseLmxogHEe1Qj5CZ.jpeg",
+          "type": "image/jpeg",
+          "roles": [
+            "thumbnail"
+          ],
+          "title": "Thumbnail image",
+          "license": "CC-BY-4.0"
+        },
+        "image-640": {
+          "href": "https://cdn.fotoshi.com/images/IwIrjPceseLmxogHEe1Qj5CZ-640.jpeg",
+          "type": "image/jpeg",
+          "roles": [
+            "overview"
+          ],
+          "title": "Public 640px image",
+          "license": "CC-BY-4.0"
+        },
+        "image-1280": {
+          "href": "https://cdn.fotoshi.com/images/IwIrjPceseLmxogHEe1Qj5CZ-1280.jpeg",
+          "type": "image/jpeg",
+          "roles": [
+            "overview"
+          ],
+          "title": "Public 1280px image",
+          "license": "CC-BY-4.0"
+        },
+        "image-2048": {
+          "href": "https://cdn.fotoshi.com/images/IwIrjPceseLmxogHEe1Qj5CZ-2048.jpeg",
+          "type": "image/jpeg",
+          "roles": [
+            "overview"
+          ],
+          "title": "Public 2048px image",
+          "license": "CC-BY-4.0"
+        },
+        "image-2560": {
+          "href": "https://cdn.fotoshi.com/images/IwIrjPceseLmxogHEe1Qj5CZ-2560.jpeg",
+          "type": "image/jpeg",
+          "roles": [
+            "data"
+          ],
+          "title": "Public 2560px display image",
+          "license": "CC-BY-4.0"
+        }
+      },
+      "links": [
+        {
+          "rel": "self",
+          "type": "application/geo+json",
+          "href": "https://api.fotoshi.com/v1/stac/collections/fotoshi-photos/items/IwIrjPceseLmxogHEe1Qj5CZ"
+        },
+        {
+          "rel": "collection",
+          "type": "application/json",
+          "href": "https://api.fotoshi.com/v1/stac/collections/fotoshi-photos"
+        },
+        {
+          "rel": "root",
+          "type": "application/json",
+          "href": "https://api.fotoshi.com/v1/stac"
+        },
+        {
+          "rel": "license",
+          "type": "text/html",
+          "href": "https://creativecommons.org/licenses/by/4.0/",
+          "title": "CC BY 4.0"
+        }
+      ]
+    },
+    {
+      "type": "Feature",
+      "stac_version": "1.0.0",
+      "id": "RX2glqTtyifKxbgu8HTrqz1r",
+      "collection": "fotoshi-photos",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          139.6323488,
+          35.6395986
+        ]
+      },
+      "bbox": [
+        139.6323488,
+        35.6395986,
+        139.6323488,
+        35.6395986
+      ],
+      "properties": {
+        "datetime": "2026-10-10T13:34:47.187Z",
+        "source_capture_precision": null,
+        "username": "usakooon",
+        "creator_name": "usakooon",
+        "source_organization": null,
+        "location_source": "measured",
+        "width": 4128,
+        "height": 3096,
+        "license": "CC-BY-4.0"
+      },
+      "assets": {
+        "thumbnail": {
+          "href": "https://cdn.fotoshi.com/thumbnails/RX2glqTtyifKxbgu8HTrqz1r.jpeg",
+          "type": "image/jpeg",
+          "roles": [
+            "thumbnail"
+          ],
+          "title": "Thumbnail image",
+          "license": "CC-BY-4.0"
+        },
+        "image-640": {
+          "href": "https://cdn.fotoshi.com/images/RX2glqTtyifKxbgu8HTrqz1r-640.jpeg",
+          "type": "image/jpeg",
+          "roles": [
+            "overview"
+          ],
+          "title": "Public 640px image",
+          "license": "CC-BY-4.0"
+        },
+        "image-1280": {
+          "href": "https://cdn.fotoshi.com/images/RX2glqTtyifKxbgu8HTrqz1r-1280.jpeg",
+          "type": "image/jpeg",
+          "roles": [
+            "overview"
+          ],
+          "title": "Public 1280px image",
+          "license": "CC-BY-4.0"
+        },
+        "image-2048": {
+          "href": "https://cdn.fotoshi.com/images/RX2glqTtyifKxbgu8HTrqz1r-2048.jpeg",
+          "type": "image/jpeg",
+          "roles": [
+            "overview"
+          ],
+          "title": "Public 2048px image",
+          "license": "CC-BY-4.0"
+        },
+        "image-2560": {
+          "href": "https://cdn.fotoshi.com/images/RX2glqTtyifKxbgu8HTrqz1r-2560.jpeg",
+          "type": "image/jpeg",
+          "roles": [
+            "data"
+          ],
+          "title": "Public 2560px display image",
+          "license": "CC-BY-4.0"
+        }
+      },
+      "links": [
+        {
+          "rel": "self",
+          "type": "application/geo+json",
+          "href": "https://api.fotoshi.com/v1/stac/collections/fotoshi-photos/items/RX2glqTtyifKxbgu8HTrqz1r"
+        },
+        {
+          "rel": "collection",
+          "type": "application/json",
+          "href": "https://api.fotoshi.com/v1/stac/collections/fotoshi-photos"
+        },
+        {
+          "rel": "root",
+          "type": "application/json",
+          "href": "https://api.fotoshi.com/v1/stac"
+        },
+        {
+          "rel": "license",
+          "type": "text/html",
+          "href": "https://creativecommons.org/licenses/by/4.0/",
+          "title": "CC BY 4.0"
+        }
+      ]
+    }
+  ],
+  "links": [
+    {
+      "rel": "self",
+      "type": "application/geo+json",
+      "href": "https://api.fotoshi.com/v1/stac/search"
+    },
+    {
+      "rel": "root",
+      "type": "application/json",
+      "href": "https://api.fotoshi.com/v1/stac"
+    },
+    {
+      "rel": "collection",
+      "type": "application/json",
+      "href": "https://api.fotoshi.com/v1/stac/collections/fotoshi-photos"
+    }
+  ],
+  "context": {
+    "returned": 6,
+    "matched": 6,
+    "limit": 100,
+    "offset": 0
+  },
+  "numberReturned": 6,
+  "numberMatched": 6
+}

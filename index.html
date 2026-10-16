@@ -164,6 +164,12 @@
       font-size: 10px; font-weight: 700;
       display: flex; align-items: center; justify-content: center;
     }
+    .swatch-photo {
+      width: 16px; height: 16px; border-radius: 50%;
+      background: var(--accent);
+      font-size: 9px; line-height: 1;
+      display: flex; align-items: center; justify-content: center;
+    }
     .layer-ctl button {
       display: block; width: 100%; min-height: 34px; margin-top: 2px;
       font: inherit; color: var(--text);
@@ -183,6 +189,16 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.6);
     }
     .pin.review { border: 2px dashed var(--warn); background: #FFE9A6; }
+
+    /* ── 写真ピン（Fotoshi） ── */
+    .photo-pin {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: var(--accent);
+      font-size: 14px; line-height: 1;
+      display: flex; align-items: center; justify-content: center;
+      border: 2px solid #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.6);
+    }
 
     /* ── 記録開始・終了マーカー ── */
     .flag {
@@ -277,6 +293,18 @@
     }
     .popup-inner > .no-photo { height: auto; padding: 20px; }
 
+    .popup-photo {
+      background: var(--photo-bg);
+      border-radius: 6px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+    .popup-photo img { width: 100%; height: 100%; object-fit: contain; display: block; }
+    .popup-credit { font-size: 11px; color: var(--text-muted); line-height: 1.7; }
+    .popup-credit dt { float: left; clear: left; width: 5em; }
+    .popup-credit dd { margin-left: 5em; color: var(--text); }
+    .popup-credit a { color: var(--accent); }
+
     /* ── フッター ── */
     footer {
       background: var(--bg-panel);
@@ -345,6 +373,7 @@
 
 <footer>
   撮影記録とYAMAPのGPS記録（GPX）をもとに独自に作成した地図です。休憩所の位置は施設の代表位置で、実際の撮影位置とは異なる場合があります。表示する時刻は日本時間です。<br>
+  📷 ピンの写真: <a href="https://fotoshi.com/" target="_blank" rel="noopener">Fotoshi</a> で公開している写真（撮影者・ライセンスは各写真に表示）<br>
   地図: &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors, &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>
 </footer>
 
@@ -365,6 +394,11 @@ const POSITION_LABEL = {
   'actual':         '実測位置'
 };
 const METHOD_LABEL = { fotoshi: 'Fotoshi', camera: '通常のカメラ', unknown: '不明' };
+
+const PHOTOS_PATH = 'data/aoyama-sagamihara.geojson';   // Fotoshi から書き出した写真（STAC GeoJSON）
+const LICENSES = {
+  'CC-BY-4.0': { label: 'CC BY 4.0', url: 'https://creativecommons.org/licenses/by/4.0/' }
+};
 
 /* ═══════════════ 小さな道具 ═══════════════ */
 const esc = s => String(s ?? '').replace(/[&<>"']/g,
@@ -460,6 +494,50 @@ function distanceToTrack(lat, lng, runs) {
     }
   }
   return best;
+}
+
+/* ═══════════════ 写真（GeoJSON） ═══════════════ */
+const httpsUrl = s => { try { return new URL(s).protocol === 'https:' ? s : null; } catch { return null; } };
+
+function parsePhotos(geojson) {
+  return (geojson.features || []).map(f => {
+    const c = f.geometry && f.geometry.type === 'Point' ? f.geometry.coordinates : null;
+    const src = httpsUrl(f.assets && f.assets['image-640'] && f.assets['image-640'].href);
+    if (!c || !Number.isFinite(c[0]) || !Number.isFinite(c[1]) || !src) return null;
+    const p = f.properties || {};
+    const time = p.datetime ? new Date(p.datetime) : null;
+    const lic = LICENSES[p.license];
+    const licLink = (f.links || []).find(l => l.rel === 'license');
+    return {
+      id: f.id,
+      lat: c[1], lng: c[0],
+      src,
+      ratio: p.width > 0 && p.height > 0 ? `${p.width} / ${p.height}` : '4 / 3',
+      time: time && !isNaN(time) ? time : null,
+      creator: p.creator_name || p.username || '不明',
+      license: {
+        label: lic ? lic.label : (p.license || '不明'),
+        url: httpsUrl(licLink && licLink.href) || (lic && lic.url) || null
+      }
+    };
+  }).filter(Boolean).sort((a, b) => (a.time || 0) - (b.time || 0));
+}
+
+function buildPhotoPopup(photo) {
+  const when = photo.time ? `${esc(jst(photo.time).full)}（日本時間）` : '不明';
+  const license = photo.license.url
+    ? `<a href="${esc(photo.license.url)}" target="_blank" rel="noopener license">${esc(photo.license.label)}</a>`
+    : esc(photo.license.label);
+  return `<div class="popup-inner">
+    <div class="popup-photo" style="aspect-ratio: ${esc(photo.ratio)}">
+      <img src="${esc(photo.src)}" alt="${esc(when)}に撮影した写真" loading="lazy">
+    </div>
+    <dl class="popup-credit">
+      <dt>撮影日時</dt><dd>${when}</dd>
+      <dt>撮影者</dt><dd>${esc(photo.creator)}</dd>
+      <dt>ライセンス</dt><dd>${license}</dd>
+    </dl>
+  </div>`;
 }
 
 /* ═══════════════ 表示パーツ ═══════════════ */
@@ -579,7 +657,7 @@ function buildSpotPopup(spot, review) {
 // ポップアップが開くたびに、写真の切り替えボタンなどを有効にする
 function wirePopup(root) {
   if (!root) return;
-  root.querySelectorAll('.photo-slide img').forEach(img => {
+  root.querySelectorAll('.photo-slide img, .popup-photo img').forEach(img => {
     img.addEventListener('error', () => {
       const msg = document.createElement('div');
       msg.className = 'no-photo';
@@ -644,7 +722,7 @@ async function fetchOk(path) {
   return res;
 }
 
-function render(data, track) {
+function render(data, track, photos) {
   const spots = data.spots || [];
   const meta = data.meta || {};
   const threshold = meta.reviewThresholdMeters === null ? null
@@ -705,13 +783,32 @@ function render(data, track) {
   }
   spotLayer.addTo(map);
 
-  // 初期表示: 軌跡全体と全休憩所が収まる範囲
-  const all = [...(track ? track.latlngs : []), ...spots.map(s => [s.lat, s.lng])];
+  // Fotoshi の写真
+  const photoLayer = L.layerGroup();
+  photos.forEach(photo => {
+    const icon = L.divIcon({
+      className: '',
+      html: '<div class="photo-pin">📷</div>',
+      iconSize: [28, 28],
+      iconAnchor: [14, 14],
+      popupAnchor: [0, -16]
+    });
+    const title = photo.time ? `写真 ${jst(photo.time).short}` : '写真';
+    L.marker([photo.lat, photo.lng], { icon, title, riseOnHover: true, zIndexOffset: 800 })
+      .bindPopup(buildPhotoPopup(photo), { maxWidth: 300 })
+      .on('popupopen', e => wirePopup(e.popup.getElement()))
+      .addTo(photoLayer);
+  });
+  if (photos.length) photoLayer.addTo(map);
+
+  // 初期表示: 軌跡全体と全休憩所・写真が収まる範囲
+  const all = [...(track ? track.latlngs : []), ...spots.map(s => [s.lat, s.lng]), ...photos.map(p => [p.lat, p.lng])];
   const fitAll = () => { if (all.length) map.fitBounds(L.latLngBounds(all), { padding: [56, 56] }); };
 
   const toggles = [];
   if (trackLayer) toggles.push({ layer: trackLayer, label: '歩行軌跡', swatch: '<span class="swatch-line"></span>' });
   toggles.push({ layer: spotLayer, label: '休憩所', swatch: '<span class="swatch-pin">1</span>' });
+  if (photos.length) toggles.push({ layer: photoLayer, label: `写真（${photos.length}枚）`, swatch: '<span class="swatch-photo">📷</span>' });
   const panel = addLayerPanel(map, toggles, fitAll);
 
   map.invalidateSize();
@@ -744,7 +841,14 @@ function render(data, track) {
       showNotice('歩行軌跡（GPX）を読み込めませんでした。休憩所だけを表示しています。');
     }
   }
-  render(data, track);
+  let photos = [];
+  try {
+    photos = parsePhotos(await (await fetchOk(PHOTOS_PATH)).json());
+  } catch (e) {
+    console.error(e);
+    showNotice(`写真のデータ（${PHOTOS_PATH}）を読み込めませんでした。休憩所と歩行軌跡だけを表示しています。`);
+  }
+  render(data, track, photos);
 })();
 </script>
 </body>
