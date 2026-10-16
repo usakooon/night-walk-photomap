@@ -117,6 +117,14 @@
     }
     .spot-status { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
     .spot-status.has-photo { color: var(--accent); }
+    .spot-thumbs { display: flex !important; gap: 4px; margin-top: 5px; }
+    .spot-thumbs img {
+      width: 44px; height: 33px;
+      object-fit: cover;
+      border-radius: 3px;
+      background: var(--photo-bg);
+      display: block;
+    }
     .spot-flag { font-size: 10px; color: var(--warn); margin-top: 2px; }
 
     /* ── 地図 ── */
@@ -264,16 +272,9 @@
     .popup-desc { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; line-height: 1.6; }
     .popup-text { font-size: 12px; color: var(--text-muted); line-height: 1.6; }
 
-    .photo-slides {
-      aspect-ratio: 4 / 3;
-      background: var(--photo-bg);
-      border-radius: 6px;
-      overflow: hidden;
-    }
-    .photo-slide { display: none; height: 100%; flex-direction: column; }
-    .photo-slide.active { display: flex; }
-    .photo-slide img { flex: 1; min-height: 0; width: 100%; object-fit: contain; display: block; }
-    .photo-caption { font-size: 10px; color: var(--text-muted); padding: 4px 6px; text-align: center; }
+    .photo-slide { display: none; }
+    .photo-slide.active { display: block; }
+    .photo-caption { font-size: 10px; color: var(--text-muted); padding: 0 6px; text-align: center; }
     .photo-nav { display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 6px; }
     .photo-nav button {
       min-width: 36px; min-height: 30px;
@@ -294,6 +295,7 @@
     .popup-inner > .no-photo { height: auto; padding: 20px; }
 
     .popup-photo {
+      max-height: min(240px, 36vh);   /* 縦長の写真でポップアップが画面からはみ出さないように */
       background: var(--photo-bg);
       border-radius: 6px;
       overflow: hidden;
@@ -335,7 +337,7 @@
       .layout { flex-direction: column; }
       .sidebar {
         width: 100%; min-width: 0;
-        height: 124px; min-height: 124px;
+        height: 160px; min-height: 160px;
         border-right: none;
         border-bottom: 1px solid var(--border);
       }
@@ -350,6 +352,9 @@
       }
       .spot-item.active { box-shadow: inset 0 -3px 0 var(--accent); }
       .spot-name { font-size: 11px; white-space: normal; }
+      .spot-thumbs { justify-content: center; margin-top: 3px; }
+      .spot-thumbs img { width: 36px; height: 27px; }
+      .spot-thumbs img:nth-child(n+2) { display: none; }   /* 狭い画面では1枚だけ */
     }
   </style>
 </head>
@@ -509,9 +514,11 @@ function parsePhotos(geojson) {
     const lic = LICENSES[p.license];
     const licLink = (f.links || []).find(l => l.rel === 'license');
     return {
+      kind: 'fotoshi',
       id: f.id,
       lat: c[1], lng: c[0],
       src,
+      thumb: httpsUrl(f.assets.thumbnail && f.assets.thumbnail.href) || src,
       ratio: p.width > 0 && p.height > 0 ? `${p.width} / ${p.height}` : '4 / 3',
       time: time && !isNaN(time) ? time : null,
       creator: p.creator_name || p.username || '不明',
@@ -523,21 +530,35 @@ function parsePhotos(geojson) {
   }).filter(Boolean).sort((a, b) => (a.time || 0) - (b.time || 0));
 }
 
-function buildPhotoPopup(photo) {
+// Fotoshi の写真1枚分（画像＋撮影日時・撮影者・ライセンス）
+function fotoshiPhotoHtml(photo) {
   const when = photo.time ? `${esc(jst(photo.time).full)}（日本時間）` : '不明';
   const license = photo.license.url
     ? `<a href="${esc(photo.license.url)}" target="_blank" rel="noopener license">${esc(photo.license.label)}</a>`
     : esc(photo.license.label);
-  return `<div class="popup-inner">
-    <div class="popup-photo" style="aspect-ratio: ${esc(photo.ratio)}">
+  return `<div class="popup-photo" style="aspect-ratio: ${esc(photo.ratio)}">
       <img src="${esc(photo.src)}" alt="${esc(when)}に撮影した写真" loading="lazy">
     </div>
     <dl class="popup-credit">
       <dt>撮影日時</dt><dd>${when}</dd>
       <dt>撮影者</dt><dd>${esc(photo.creator)}</dd>
       <dt>ライセンス</dt><dd>${license}</dd>
-    </dl>
-  </div>`;
+    </dl>`;
+}
+
+function buildPhotoPopup(photo) {
+  return `<div class="popup-inner">${fotoshiPhotoHtml(photo)}</div>`;
+}
+
+// 休憩所に表示する写真の一覧: spots.json の photos（images/ の写真）と fotoshiPhotos（写真のid）
+function spotGallery(spot, photoById, missingIds) {
+  const local = (Array.isArray(spot.photos) ? spot.photos : []).map(p => ({ kind: 'local', ...p, thumb: p.src }));
+  const fotoshi = (Array.isArray(spot.fotoshiPhotos) ? spot.fotoshiPhotos : []).map(id => {
+    const photo = photoById.get(id);
+    if (!photo) missingIds.push(id);
+    return photo;
+  }).filter(Boolean);
+  return [...fotoshi, ...local];
 }
 
 /* ═══════════════ 表示パーツ ═══════════════ */
@@ -614,8 +635,8 @@ function buildTrackLayer(track) {
   return group;
 }
 
-function buildSpotPopup(spot, review) {
-  const hasPhotos = Array.isArray(spot.photos) && spot.photos.length > 0;
+function buildSpotPopup(spot, gallery, review) {
+  const hasPhotos = gallery.length > 0;
   const tags = [];
   if (spot.time) tags.push(`<span class="popup-tag">🕐 ${esc(spot.time)}</span>`);
   if (hasPhotos) tags.push(`<span class="popup-tag">撮影: ${esc(METHOD_LABEL[spot.photoMethod] || '不明')}</span>`);
@@ -628,18 +649,21 @@ function buildSpotPopup(spot, review) {
 
   let photoHtml;
   if (hasPhotos) {
-    const slides = spot.photos.map((p, i) => `
+    const slides = gallery.map((p, i) => `
       <div class="photo-slide${i === 0 ? ' active' : ''}">
-        <img src="${esc(p.src)}" alt="${esc(p.caption || spot.name)}" loading="lazy">
-        <div class="photo-caption">${esc(p.caption || '')}${p.time ? ' — ' + esc(p.time) : ''}</div>
+        ${p.kind === 'fotoshi' ? fotoshiPhotoHtml(p) : `
+        <div class="popup-photo" style="aspect-ratio: 4 / 3">
+          <img src="${esc(p.src)}" alt="${esc(p.caption || spot.name)}" loading="lazy">
+        </div>
+        <div class="photo-caption">${esc(p.caption || '')}${p.time ? ' — ' + esc(p.time) : ''}</div>`}
       </div>`).join('');
-    const nav = spot.photos.length > 1 ? `
+    const nav = gallery.length > 1 ? `
       <div class="photo-nav">
         <button type="button" data-dir="-1" aria-label="前の写真">‹</button>
-        <span class="photo-counter">1 / ${spot.photos.length}</span>
+        <span class="photo-counter">1 / ${gallery.length}</span>
         <button type="button" data-dir="1" aria-label="次の写真">›</button>
       </div>` : '';
-    photoHtml = `<div class="photo-slider"><div class="photo-slides">${slides}</div>${nav}</div>`;
+    photoHtml = `<div class="photo-slider">${slides}${nav}</div>`;
   } else {
     photoHtml = '<div class="no-photo">📷 写真準備中</div>';
   }
@@ -655,7 +679,8 @@ function buildSpotPopup(spot, review) {
 }
 
 // ポップアップが開くたびに、写真の切り替えボタンなどを有効にする
-function wirePopup(root) {
+function wirePopup(popup) {
+  const root = popup.getElement();
   if (!root) return;
   root.querySelectorAll('.photo-slide img, .popup-photo img').forEach(img => {
     img.addEventListener('error', () => {
@@ -674,6 +699,7 @@ function wirePopup(root) {
       cur = (cur + Number(btn.dataset.dir) + slides.length) % slides.length;
       slides[cur].classList.add('active');
       slider.querySelector('.photo-counter').textContent = `${cur + 1} / ${slides.length}`;
+      popup.update();   // 写真ごとに高さが違うので、ポップアップの位置を合わせ直す
     });
   });
 }
@@ -729,11 +755,23 @@ function render(data, track, photos) {
                   : Number.isFinite(meta.reviewThresholdMeters) ? meta.reviewThresholdMeters
                   : DEFAULT_REVIEW_M;
 
+  // 写真の割り当ては spots.json の fotoshiPhotos（写真のid）に従う
+  const photoById = new Map(photos.map(p => [p.id, p]));
+  const missingIds = [];
+  const galleries = spots.map(spot => spotGallery(spot, photoById, missingIds));
+  const assignedIds = new Set(galleries.flat().filter(p => p.kind === 'fotoshi').map(p => p.id));
+  const loosePhotos = photos.filter(p => !assignedIds.has(p.id));
+  if (photos.length && missingIds.length) {
+    console.warn('spots.json の fotoshiPhotos にあるが写真データに見つからないid:', missingIds);
+    showNotice(`spots.json の fotoshiPhotos に、写真データにないidがあります（${missingIds.join(', ')}）。`);
+  }
+
   const spotLayer = L.layerGroup();
   const listEl = document.getElementById('spotList');
   const items = [];
 
   spots.forEach((spot, i) => {
+    const gallery = galleries[i];
     const meters = track ? distanceToTrack(spot.lat, spot.lng, track.runs) : null;
     const review = (meters !== null && threshold !== null && meters > threshold) ? { meters } : null;
 
@@ -745,10 +783,12 @@ function render(data, track, photos) {
       popupAnchor: [0, -18]
     });
     const marker = L.marker([spot.lat, spot.lng], { icon, title: `${spot.id}. ${spot.name}`, riseOnHover: true, zIndexOffset: 1000 })
-      .bindPopup(buildSpotPopup(spot, review), { maxWidth: 300 })
+      .bindPopup(buildSpotPopup(spot, gallery, review), { maxWidth: 300 })
       .addTo(spotLayer);
 
-    const hasPhoto = Array.isArray(spot.photos) && spot.photos.length > 0;
+    const hasPhoto = gallery.length > 0;
+    const thumbs = gallery.slice(0, 3).map(p =>
+      `<img src="${esc(p.thumb)}" alt="" loading="lazy" onerror="this.remove()">`).join('');
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'spot-item';
@@ -756,7 +796,8 @@ function render(data, track, photos) {
       <span class="spot-num">${esc(spot.id)}</span>
       <span class="spot-info">
         <span class="spot-name">${esc(spot.name)}</span>
-        <span class="spot-status ${hasPhoto ? 'has-photo' : ''}">${hasPhoto ? `📷 ${spot.photos.length}枚` : '写真準備中'}</span>
+        <span class="spot-status ${hasPhoto ? 'has-photo' : ''}">${hasPhoto ? `📷 ${gallery.length}枚` : '写真準備中'}</span>
+        ${hasPhoto ? `<span class="spot-thumbs">${thumbs}</span>` : ''}
         ${review ? '<span class="spot-flag">位置要確認</span>' : ''}
       </span>`;
     listEl.appendChild(btn);
@@ -764,14 +805,15 @@ function render(data, track, photos) {
 
     btn.addEventListener('click', () => {
       if (!map.hasLayer(spotLayer)) { map.addLayer(spotLayer); panel.sync(); }
+      // 移動が終わってから開く（移動中に開くと、ポップアップが画面に収まるよう地図をずらす処理が効かない）
+      map.once('moveend', () => marker.openPopup());
       map.setView([spot.lat, spot.lng], Math.max(map.getZoom(), 15));
-      marker.openPopup();
     });
     marker.on('popupopen', e => {
       items.forEach(it => it.btn.classList.remove('active'));
       btn.classList.add('active');
       btn.scrollIntoView({ block: 'nearest', inline: 'nearest' });
-      wirePopup(e.popup.getElement());
+      wirePopup(e.popup);
     });
   });
 
@@ -783,9 +825,9 @@ function render(data, track, photos) {
   }
   spotLayer.addTo(map);
 
-  // Fotoshi の写真
+  // Fotoshi の写真のうち、どの休憩所にも割り当てていないものだけカメラのピンで表示
   const photoLayer = L.layerGroup();
-  photos.forEach(photo => {
+  loosePhotos.forEach(photo => {
     const icon = L.divIcon({
       className: '',
       html: '<div class="photo-pin">📷</div>',
@@ -796,19 +838,19 @@ function render(data, track, photos) {
     const title = photo.time ? `写真 ${jst(photo.time).short}` : '写真';
     L.marker([photo.lat, photo.lng], { icon, title, riseOnHover: true, zIndexOffset: 800 })
       .bindPopup(buildPhotoPopup(photo), { maxWidth: 300 })
-      .on('popupopen', e => wirePopup(e.popup.getElement()))
+      .on('popupopen', e => wirePopup(e.popup))
       .addTo(photoLayer);
   });
-  if (photos.length) photoLayer.addTo(map);
+  if (loosePhotos.length) photoLayer.addTo(map);
 
   // 初期表示: 軌跡全体と全休憩所・写真が収まる範囲
-  const all = [...(track ? track.latlngs : []), ...spots.map(s => [s.lat, s.lng]), ...photos.map(p => [p.lat, p.lng])];
+  const all = [...(track ? track.latlngs : []), ...spots.map(s => [s.lat, s.lng]), ...loosePhotos.map(p => [p.lat, p.lng])];
   const fitAll = () => { if (all.length) map.fitBounds(L.latLngBounds(all), { padding: [56, 56] }); };
 
   const toggles = [];
   if (trackLayer) toggles.push({ layer: trackLayer, label: '歩行軌跡', swatch: '<span class="swatch-line"></span>' });
   toggles.push({ layer: spotLayer, label: '休憩所', swatch: '<span class="swatch-pin">1</span>' });
-  if (photos.length) toggles.push({ layer: photoLayer, label: `写真（${photos.length}枚）`, swatch: '<span class="swatch-photo">📷</span>' });
+  if (loosePhotos.length) toggles.push({ layer: photoLayer, label: `写真（${loosePhotos.length}枚）`, swatch: '<span class="swatch-photo">📷</span>' });
   const panel = addLayerPanel(map, toggles, fitAll);
 
   map.invalidateSize();
